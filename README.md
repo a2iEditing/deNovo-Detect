@@ -1,4 +1,5 @@
 # Orshai_sites_analist_pipline
+
 import os
 import shutil
 import logging
@@ -16,6 +17,7 @@ newLine = '\n'
 tab = '\t'
 
 # User arguments
+
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description='Reads the tissue file and run script for every donor in file')
 parser.add_argument('-a', '--alignment', dest='align_dir', action='store', required=True, help='Path to Alignment files')
 parser.add_argument('-i', '--input', dest='region_file', action='store', required=True, help='Path to a list of regions sites for analyze | Required file type: bed')
@@ -31,13 +33,16 @@ parser.add_argument('-processes', dest='processes', action='store', default=20, 
 arguments = parser.parse_args()
 
 # Remove '/' from the end of path if given
+
 arguments.align_dir = arguments.align_dir.rstrip('/')
 arguments.output_dir = arguments.output_dir.rstrip('/')
 
 # Maximum number of cpu for using
+
 max_processes = min(multiprocessing.cpu_count(), arguments.processes)
 
 # Create log file
+
 log_suggest_name = f'{arguments.output_dir.split("/")[-1]}_{arguments.genome.split("/")[-1].split(".")[0]}.log'
 if arguments.log_dir is '':
     log_file_path = f'{arguments.output_dir}/Logs/{log_suggest_name}'
@@ -52,9 +57,11 @@ logging.basicConfig(filename=arguments.log_dir, format='[%(asctime)s] %(levelnam
 logging.info('''Start running Or-Shay's pipeline\n''')
 
 # Programs version
+
 program_dict = {line.split(':')[0].strip(): line.split(':')[1].strip() for line in open("/private/common/Software/OrshaysPipeline/Programs_versions/Programs_versions_dictionary.txt")}
 
 # Default paths and arguments
+
 genome_dir = arguments.genome.split('/')[:-1]
 analysis_dir = f'{arguments.output_dir}/Analysis'
 analysis_all_samples = f'{analysis_dir}/all_samples'
@@ -68,6 +75,7 @@ final_original_dir = f'{known_dir}/finale_lists/original'
 final_filtered_dir = f'{known_dir}/finale_lists/filtered'
 
 # Create all directories
+
 os.makedirs(analysis_all_samples, exist_ok=True)
 os.makedirs(outputDataDir, exist_ok=True)
 os.makedirs(outputStatsDir, exist_ok=True)
@@ -77,6 +85,7 @@ os.makedirs(final_original_dir, exist_ok=True)
 os.makedirs(final_filtered_dir, exist_ok=True)
 
 # Lists
+
 bam_files = [x for x in glob(f'{arguments.align_dir}/{arguments.pre}*/*.bam')]
 fileName = [os.path.basename(x) for x in glob(f'{arguments.align_dir}/{arguments.pre}*')]
 clusterList = '0 50 100 200 400 800 1600 3200 6400 12800 25600 51200 102400'.split(' ')
@@ -386,12 +395,15 @@ def mpileup_known(bam_file_path):
 
 
 # Step 1
+
 step_1()
 
 # Step 2
+
 step_2()
 
 # Step 3
+
 step_3()
 
 logging.info('''Finished Or-shay's Pipeline successfully!''')
