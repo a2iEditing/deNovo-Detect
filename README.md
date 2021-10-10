@@ -16,7 +16,7 @@ import pybedtools.bedtool as bed
 newLine = '\n'
 tab = '\t'
 
-# User arguments
+> User arguments
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description='Reads the tissue file and run script for every donor in file')
 parser.add_argument('-a', '--alignment', dest='align_dir', action='store', required=True, help='Path to Alignment files')
@@ -32,16 +32,16 @@ parser.add_argument('-e', '--editing', dest='min_percentage', action='store', de
 parser.add_argument('-processes', dest='processes', action='store', default=20, help='Maximum number of processes')
 arguments = parser.parse_args()
 
-# Remove '/' from the end of path if given
+> Remove '/' from the end of path if given
 
 arguments.align_dir = arguments.align_dir.rstrip('/')
 arguments.output_dir = arguments.output_dir.rstrip('/')
 
-# Maximum number of cpu for using
+> Maximum number of cpu for using
 
 max_processes = min(multiprocessing.cpu_count(), arguments.processes)
 
-# Create log file
+> Create log file
 
 log_suggest_name = f'{arguments.output_dir.split("/")[-1]}_{arguments.genome.split("/")[-1].split(".")[0]}.log'
 if arguments.log_dir is '':
@@ -56,11 +56,11 @@ logging.basicConfig(filename=arguments.log_dir, format='[%(asctime)s] %(levelnam
 
 logging.info('''Start running Or-Shay's pipeline\n''')
 
-# Programs version
+> Programs version
 
 program_dict = {line.split(':')[0].strip(): line.split(':')[1].strip() for line in open("/private/common/Software/OrshaysPipeline/Programs_versions/Programs_versions_dictionary.txt")}
 
-# Default paths and arguments
+> Default paths and arguments
 
 genome_dir = arguments.genome.split('/')[:-1]
 analysis_dir = f'{arguments.output_dir}/Analysis'
@@ -74,7 +74,7 @@ sites_list_dir = f'{known_dir}/sites_for_known'
 final_original_dir = f'{known_dir}/finale_lists/original'
 final_filtered_dir = f'{known_dir}/finale_lists/filtered'
 
-# Create all directories
+> Create all directories
 
 os.makedirs(analysis_all_samples, exist_ok=True)
 os.makedirs(outputDataDir, exist_ok=True)
@@ -84,7 +84,7 @@ os.makedirs(sites_list_dir, exist_ok=True)
 os.makedirs(final_original_dir, exist_ok=True)
 os.makedirs(final_filtered_dir, exist_ok=True)
 
-# Lists
+> Lists
 
 bam_files = [x for x in glob(f'{arguments.align_dir}/{arguments.pre}*/*.bam')]
 fileName = [os.path.basename(x) for x in glob(f'{arguments.align_dir}/{arguments.pre}*')]
@@ -394,16 +394,13 @@ def mpileup_known(bam_file_path):
     logging.info(f'{tab*2}Sample {bam_file_path.split("/")[-1].split("_")[0]} Finished known successfully!')
 
 
-# Step 1
-
+> Step 1
 step_1()
 
-# Step 2
-
+> Step 2
 step_2()
 
-# Step 3
-
+> Step 3
 step_3()
 
 logging.info('''Finished Or-shay's Pipeline successfully!''')
