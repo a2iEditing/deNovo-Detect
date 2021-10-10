@@ -1,0 +1,4 @@
+GAWK: /private/common/Software/gwak/gawk-5.0.0/gawk
+perl: perl516
+samtools: samtools-1.9
+bedtools: bedtools.2.30
