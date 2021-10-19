@@ -54,7 +54,7 @@ A 6 columns bed file needs to include: chromosome, start position, end position,
 *Currently, only the CDS region file is fit to the script
 
 #### Genomic files
-for run this scrip it's needed to download and filtered some genomic files. for guidelines please read _[Guidelines for creating genome files](https://github.com/zivtzur6/Orshai_sites_analist_pipline/blob/main/Guidelines%20for%20creating%20genome%20files.docx)_
+To run this script, some genomic files needed to be downloaded and filtered. for guidelines, please download and follow the _[Guidelines for creating genome files](https://github.com/zivtzur6/Orshai_sites_analist_pipline/blob/main/Guidelines%20for%20creating%20genome%20files.docx)_
 
 ### Output
 
@@ -67,6 +67,9 @@ Logo graph of all the mismaches type orgenaize in cluster size of: 0, 50, 100, 2
 
 #### Log file
 The log file will create in the path that the user inserts. If the user didn't insert the log file path, the log file would generate inside the Log directory.
+
+
+© 2021 Bar-Ilan University (Erez Y. Levanon, Erez.Levanon@biu.ac.il; Eli Eisenberg, elieis@post.tau.ac.il; Ziv Tzur, tzur.zivh@live.biu.ac.il).
 
 
 
