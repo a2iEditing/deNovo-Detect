@@ -53,6 +53,9 @@ Currently, only hg38 fit for this script
 A 6 columns bed file needs to include: chromosome, start position, end position, name, zero, strand bias.
 *Currently, only the CDS region file is fit to the script
 
+#### Genomic files
+for run this scrip it's needed to download and filtered some genomic files. for instructures please read 'Guidelines for creating genome files'
+
 ### Output
 
 #### Final list
