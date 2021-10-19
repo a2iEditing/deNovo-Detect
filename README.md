@@ -54,7 +54,7 @@ A 6 columns bed file needs to include: chromosome, start position, end position,
 *Currently, only the CDS region file is fit to the script
 
 #### Genomic files
-for run this scrip it's needed to download and filtered some genomic files. for instructures please read 'Guidelines for creating genome files'
+for run this scrip it's needed to download and filtered some genomic files. for guidelines please read _[Guidelines for creating genome files](https://github.com/zivtzur6/Orshai_sites_analist_pipline/blob/main/Guidelines%20for%20creating%20genome%20files.docx)_
 
 ### Output
 
