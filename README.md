@@ -41,8 +41,8 @@ An input directory containing alignment (BAM) files (it may be nested).
 **Note: alignment should be unique.** (non-unique alignment may create unpredicted, algorithm dependent, and biases)
 
 #### Region file
-A 6 columns bed file needs to include: chromosome, start position, end position, name, zero, strand bias.
-*Currently, only the CDS region file is avialble for the script by default
+A BED6 file, with the columns: chromosome, start position, end position, name, empty field (padded with 0), strand bias (+\-).
+**Currently, only the CDS region file is avialble for the script by default*
 
 #### Genomic files
 To run this script, some genomic files needed to be downloaded and filtered. for guidelines, please download and follow the _[Guidelines for creating genome files](https://github.com/zivtzur6/Orshai_sites_analist_pipline/blob/main/Guidelines%20for%20creating%20genome%20files.docx)_
