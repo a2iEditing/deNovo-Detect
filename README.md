@@ -1,26 +1,21 @@
 # Orshai sites analyst pipeline
-A tool for analyze editing sites from RNA-seq data
+A tool for the *de novo* detection of editing sites from RNA-seq data
+
+
 ## Installation and Requirements
 ### Dependencies
-- _[SAMtools](http://samtools.sourceforge.net/)_ - version 1.9 or higher (tested on 1.9)
+- _[SAMtools](http://samtools.sourceforge.net/)_
 - _[bedtools](https://bedtools.readthedocs.io/en/latest)_ - version 2.30 or higher (tested on 2.30)
 - _[GAWK](https://www.gnu.org/software/gawk/)_ - version 5.0.0 or higher (tested on 5.0.0)
 
 - _[Perl](https://www.perl.org/get.html)_ - version 5.1.6 or higher (tested on 5.1.6)
-- _[Python 3.7](https://www.python.org/downloads/source/)_ (a clean installation is sufficient)
-#### Required Python Libraries
-- os
-- shutil
-- logging
-- argparse
+- _[Python 3](https://www.python.org/downloads/source/)_ - version 3.7 and up
+
+#### Additional Python Libraries Required 
 - logomaker
 - pandas
-- glob
-- multiprocessing
-- subprocess
-- matplotlib.pyplot
-- multiprocessing.Pool
-- pybedtools.bedtool
+- matplotlib
+- pybedtools
 
 
 ### OS Requirements
@@ -47,7 +42,7 @@ The input directory contains alignment (BAM) files. Therefore, the program looks
 
 #### Region file
 A 6 columns bed file needs to include: chromosome, start position, end position, name, zero, strand bias.
-*Currently, only the CDS region file is fit to the script
+*Currently, only the CDS region file is avialble for the script by default
 
 #### Genomic files
 To run this script, some genomic files needed to be downloaded and filtered. for guidelines, please download and follow the _[Guidelines for creating genome files](https://github.com/zivtzur6/Orshai_sites_analist_pipline/blob/main/Guidelines%20for%20creating%20genome%20files.docx)_
@@ -55,14 +50,14 @@ To run this script, some genomic files needed to be downloaded and filtered. for
 ### Output
 
 #### Final list
-A list of the editing site for each cluster size of: 0, 50, 100, 200, 400, 800, 1600, 3200, 6400, 12800, 25600, 51200, 102400.
-In addition, a list of all the editing sites filtered by minimum editing rate of 0.02 and minimum read per site of 100. the user can change those values.
+A list of the detected editing site for cluster sizes of: 0, 50, 100, 200, 400, 800, 1600, 3200, 6400, 12800, 25600, 51200, 102400.
+In addition, a list of the aforementioned editing sites filtered by minimum editing rate of 0.02% and minimum coverage per site of 100 reads by default (the user may change these).
 
 #### Logo graphs
-Logo graph of all the mismaches type orgenaize in cluster size of: 0, 50, 100, 200, 400, 800, 1600, 3200, 6400, 12800, 25600, 51200, 102400
+For each pf the aforementioned cluster sizes, a logo graph (i.e. motif) for all mismatchs types. 
 
 #### Log file
-The log file will create in the path that the user inserts. If the user didn't insert the log file path, the log file would generate inside the Log directory.
+A log file created at the predefined location. If the user didn't specify a path, the log file would be generated inside the "Log" directory.
 
 
 © 2021 Bar-Ilan University (Erez Y. Levanon, Erez.Levanon@biu.ac.il; Eli Eisenberg, elieis@post.tau.ac.il; Ziv Tzur, tzur.zivh@live.biu.ac.il).
