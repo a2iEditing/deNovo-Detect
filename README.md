@@ -5,7 +5,7 @@ A tool for the *de novo* detection of editing sites from RNA-seq data
 ## Installation and Requirements
 ### Dependencies
 - _[SAMtools](http://samtools.sourceforge.net/)_
-- _[bedtools](https://bedtools.readthedocs.io/en/latest)_ - version 2.30 or higher (tested on 2.30)
+- _[bedtools](https://bedtools.readthedocs.io/en/latest)_ - version 2.27 or higher
 - _[GAWK](https://www.gnu.org/software/gawk/)_ - version 5.0.0 or higher (tested on 5.0.0)
 
 - _[Perl](https://www.perl.org/get.html)_ - version 5.1.6 or higher (tested on 5.1.6)
