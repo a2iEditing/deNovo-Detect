@@ -29,14 +29,22 @@ The installation requires a bit more than 7G of free disk space, almost all of w
 ## Running
 Run _deNovoDetect.py -h_  to see full help.
 
+### Required
+- Alignment directory ('-a', '--alignment')
+- Region file ('-i', '--input')
+- Output directory ('-o', '--output')
+- genome ('-g', '--genome')
+- chromosome length file ('-chrom_length')
+- Bedtools intersect list ('-intersect_list')
+
 ### An example for a simple run:
 ```
-_pythonInterpeter scriptLocation/deNovoDetect.py -a _alignmentDirectory_ -i _regionFile_ -o _outputDirectory_
+_pythonInterpeter scriptLocation/deNovoDetect.py -a _alignmentDirectory_ -i _regionFile_ -o _outputDirectory_ -g _genomeFile_ -chrom_length _chromosomeLengthFile_ -intersect_list _BedIntersectList_
 ```
 
 ### Inputs
 
-#### ALignment 
+#### Alignment 
 An input directory containing alignment (BAM) files (it may be nested).   
 **Note: alignment should be unique.** (non-unique alignment may create unpredicted, algorithm dependent, and biases)
 
