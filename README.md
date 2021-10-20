@@ -46,9 +46,6 @@ _pythonInterpeter scriptLocation/AnalyzeTissue.py -a _alignmentDirectory_ -i _re
 The input directory contains alignment (BAM) files. Therefore, the program looks for the BAM files within all alignment directories.  
 **Note: alignment should be unique.** (non-unique alignment may create unpredicted, algorithm dependent, and biases)
 
-#### Genome
-Currently, only hg38 fit for this script
-
 #### Region file
 A 6 columns bed file needs to include: chromosome, start position, end position, name, zero, strand bias.
 *Currently, only the CDS region file is fit to the script
