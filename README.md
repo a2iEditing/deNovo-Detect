@@ -1,4 +1,4 @@
-# Orshai sites analyst pipeline
+# deNovo Detect
 A tool for the *de novo* detection of editing sites from RNA-seq data
 
 
