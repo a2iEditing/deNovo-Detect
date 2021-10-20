@@ -30,8 +30,7 @@ A tool for analyze editing sites from RNA-seq data
 The program has low demand for system resources (CPU and memory) - only the default resource requirements of SAMtools and bedtools are needed (run with default CPU and memory parameters to generate the CMPileups). For the rest of the processing, the program demands very little. However **the default thread number is high** (and can be easily changed using command line parameters)
 
 ##### Disk Space
-The installation requires a bit more than 7G of free disk space, almost all of which is for the built-in resources (built-in genomes and tables which are not mandatory for running, see further details below for installation without downloading and running)
-
+The installation requires a bit more than 7G of free disk space, almost all of which is for the built-in resources
 ## Running
 Run _AnalyzeTissue.py -h_  to see full help.
 
