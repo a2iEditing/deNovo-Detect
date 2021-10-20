@@ -37,7 +37,7 @@ _pythonInterpeter scriptLocation/AnalyzeTissue.py -a _alignmentDirectory_ -i _re
 ### Inputs
 
 #### ALignment 
-The input directory contains alignment (BAM) files. Therefore, the program looks for the BAM files within all alignment directories.  
+An input directory containing alignment (BAM) files (it may be nested).   
 **Note: alignment should be unique.** (non-unique alignment may create unpredicted, algorithm dependent, and biases)
 
 #### Region file
