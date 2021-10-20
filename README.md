@@ -27,11 +27,11 @@ The program has low demand for system resources (CPU and memory) - only the defa
 ##### Disk Space
 The installation requires a bit more than 7G of free disk space, almost all of which is for the built-in resources
 ## Running
-Run _AnalyzeTissue.py -h_  to see full help.
+Run _deNovoDetect.py -h_  to see full help.
 
 ### An example for a simple run:
 ```
-_pythonInterpeter scriptLocation/AnalyzeTissue.py -a _alignmentDirectory_ -i _regionFile_ -o _outputDirectory_
+_pythonInterpeter scriptLocation/deNovoDetect.py -a _alignmentDirectory_ -i _regionFile_ -o _outputDirectory_
 ```
 
 ### Inputs
