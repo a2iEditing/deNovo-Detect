@@ -2,3 +2,5 @@ GAWK: /private/common/Software/gwak/gawk-5.0.0/gawk
 perl: perl516
 samtools: samtools-1.9
 bedtools: bedtools.2.30
+annovar: /home/alu/gabayo2/tools/annovar
+annovarDB: /home/alu/gabayo2/tools/annovar/humandb_ucsc
