@@ -40,7 +40,7 @@ Run _deNovoDetect.py -h_  to see full help.
 
 ### An example for a simple run:
 ```
-_pythonInterpeter scriptLocation/deNovoDetect.py -a _alignmentDirectory_ -i _regionFile_ -o _outputDirectory_ -g _genomeFile_ -chrom_length _chromosomeLengthFile_ -intersect_list _BedIntersectList_
+_pythonInterpeter scriptLocation/deNovoDetect.py -a _alignmentDirectory_ -i _regionFile_ -o _outputDirectory_ -g _genomeFile_ -chrom_length _chromosomeLengthFile_ -intersect_list _BedIntersectList_ -b _BLATMismatches_
 ```
 
 ### Inputs
@@ -54,7 +54,7 @@ A BED6 file, with the columns: chromosome, start position, end position, name, e
 **Currently, only the CDS region file is avialble for the script by default*
 
 #### Annovar DB
-Configured RefSeq (or similar) annovar DB. This is configured in the <install directory>/Programs_versions/Programs_versions_dictionary.txt
+Configured RefSeq (or similar) annovar DB. This is configured in the \<install directory\>/Programs_versions/Programs_versions_dictionary.txt file
 
 #### Genomic files
 To run this script, some genomic files needed to be downloaded and filtered. for guidelines, please download and follow the _[Guidelines for creating genome files](https://github.com/zivtzur6/Orshai_sites_analist_pipline/blob/main/Guidelines%20for%20creating%20genome%20files.docx)_
