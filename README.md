@@ -7,7 +7,7 @@ A tool for the *de novo* detection of editing sites from RNA-seq data
 - _[SAMtools](http://samtools.sourceforge.net/)_
 - _[bedtools](https://bedtools.readthedocs.io/en/latest)_ - version 2.27 or higher
 - _[GAWK](https://www.gnu.org/software/gawk/)_ - version 5.0.0 or higher (tested on 5.0.0)
-
+- _[Annovar](https://annovar.openbioinformatics.org)_ 
 - _[Perl](https://www.perl.org/get.html)_ - version 5.1.6 or higher (tested on 5.1.6)
 - _[Python 3](https://www.python.org/downloads/source/)_ - version 3.7 and up
 
@@ -36,6 +36,7 @@ Run _deNovoDetect.py -h_  to see full help.
 - genome ('-g', '--genome')
 - chromosome length file ('-chrom_length')
 - Bedtools intersect list ('-intersect_list')
+- BLAT-derived mismatches to filter file ('-b', '--blat')
 
 ### An example for a simple run:
 ```
@@ -51,6 +52,9 @@ An input directory containing alignment (BAM) files (it may be nested).
 #### Region file
 A BED6 file, with the columns: chromosome, start position, end position, name, empty field (padded with 0), strand bias (+\-).
 **Currently, only the CDS region file is avialble for the script by default*
+
+#### Annovar DB
+Configured RefSeq (or similar) annovar DB. This is configured in the <install directory>/Programs_versions/Programs_versions_dictionary.txt
 
 #### Genomic files
 To run this script, some genomic files needed to be downloaded and filtered. for guidelines, please download and follow the _[Guidelines for creating genome files](https://github.com/zivtzur6/Orshai_sites_analist_pipline/blob/main/Guidelines%20for%20creating%20genome%20files.docx)_
