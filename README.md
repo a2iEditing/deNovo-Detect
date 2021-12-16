@@ -71,6 +71,7 @@ For each pf the aforementioned cluster sizes, a logo graph (i.e. motif) for all 
 #### Log file
 A log file created at the predefined location. If the user didn't specify a path, the log file would be generated inside the "Log" directory.
 
+[![DOI](https://zenodo.org/badge/415645687.svg)](https://zenodo.org/badge/latestdoi/415645687)
 
 © 2021 Bar-Ilan University (Erez Y. Levanon, Erez.Levanon@biu.ac.il; Eli Eisenberg, elieis@post.tau.ac.il; Ziv Tzur, tzur.zivh@live.biu.ac.il).
 
