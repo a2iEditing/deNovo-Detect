@@ -513,7 +513,7 @@ if arguments.start_from <= 2 and arguments.end_at >= 2:
     step_2()
 
 # Step 3
-if and arguments.end_at >= 3:
+if arguments.end_at >= 3:
     step_3()
 
-logging.info('''Finished Or-shay's Pipeline successfully!''')
+logging.info('''Finished De-Novo Pipeline successfully!''')
