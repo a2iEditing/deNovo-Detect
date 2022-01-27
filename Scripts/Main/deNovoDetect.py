@@ -16,19 +16,34 @@ newLine = '\n'
 tab = '\t'
 
 # User arguments
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, description='Reads the tissue file and run script for every donor in file')
-parser.add_argument('-a', '--alignment', dest='align_dir', action='store', required=True, help='Path to Alignment files')
-parser.add_argument('-i', '--input', dest='region_file', action='store', required=True, help='Path to a list of regions sites for analyze | Required file type: bed')
-parser.add_argument('-b', '--blat', dest='blat_file', action='store', required=True, help='Path to a file of mismatches to filter (produced from BLAT)| Required file type: bed')
+parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                                 description='Reads the tissue file and run script for every donor in file')
+parser.add_argument('-a', '--alignment', dest='align_dir', action='store', required=True,
+                    help='Path to Alignment files')
+parser.add_argument('-i', '--input', dest='region_file', action='store', required=True,
+                    help='Path to a list of regions sites for analyze | Required file type: bed')
+parser.add_argument('-b', '--blat', dest='blat_file', action='store', required=True,
+                    help='Path to a file of mismatches to filter (produced from BLAT)| Required file type: bed')
 parser.add_argument('-o', '--output', dest='output_dir', action='store', required=True, help='Path to output directory')
 parser.add_argument('-l', '--log', dest='log_dir', action='store', default='', help='Path to a log file')
-parser.add_argument('-g', '--genome', dest='genome', action='store', required=True, help='Path to the genome of samples')
-parser.add_argument('-pre', '--prefix', dest='pre', action='store', default='SRR', help='Prefix of alignment files | Default prefix: SRR')
-parser.add_argument('-chrom_length', dest='chrom_length', action='store', required=True, help='List of all chromosomes length for the genome in use')
-parser.add_argument('-intersect_list', dest='intersect_list', action='store', required=True, help='List of bed files to intersect and filter')
-parser.add_argument('-r', '--reads', dest='min_reads', action='store', default=100, help='Minimum number of reads for a site')
-parser.add_argument('-e', '--editing', dest='min_percentage', action='store', default=0.02, help='Minimum editing percentage for a site')
+parser.add_argument('-g', '--genome', dest='genome', action='store', required=True,
+                    help='Path to the genome of samples')
+parser.add_argument('-pre', '--prefix', dest='pre', action='store', default='SRR',
+                    help='Prefix of alignment files | Default prefix: SRR')
+parser.add_argument('-chrom_length', dest='chrom_length', action='store', required=True,
+                    help='List of all chromosomes length for the genome in use')
+parser.add_argument('-intersect_list', dest='intersect_list', action='store', required=True,
+                    help='List of bed files to intersect and filter')
+parser.add_argument('-r', '--reads', dest='min_reads', action='store', default=100,
+                    help='Minimum number of reads for a site')
+parser.add_argument('-e', '--editing', dest='min_percentage', action='store', type=float, default=0.02,
+                    help='Minimum editing percentage for a site')
 parser.add_argument('-processes', dest='processes', action='store', default=20, help='Maximum number of processes')
+parser.add_argument('--start_from', dest='start_from', action='store', type=int, default=1,
+                    help='Step to start with(to skip steps, steps 1-3)')
+parser.add_argument('--end_at', dest='end_at', action='store', type=int, default=3,
+                    help='Step to end with(to stop at a step, steps 1-3)')
+
 arguments = parser.parse_args()
 
 # Remove '/' from the end of path if given
@@ -40,7 +55,7 @@ max_processes = min(multiprocessing.cpu_count(), arguments.processes)
 
 # Create log file
 log_suggest_name = f'{arguments.output_dir.split("/")[-1]}_{arguments.genome.split("/")[-1].split(".")[0]}.log'
-if arguments.log_dir is '':
+if arguments.log_dir == '':
     log_file_path = f'{arguments.output_dir}/Logs/{log_suggest_name}'
 else:
     log_file_path = f'{arguments.log_dir}/{log_suggest_name}' if arguments.log_dir.endwith('/') else arguments.log_dir
@@ -54,7 +69,8 @@ logging.info('''Start running Or-Shay's pipeline\n''')
 
 # Programs version
 install_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-program_dict = {line.split(':')[0].strip(): line.split(':')[1].strip() for line in open(f"{install_dir}/Programs_versions/Programs_versions_dictionary.txt")}
+program_dict = {line.split(':')[0].strip(): line.split(':')[1].strip() for line in
+                open(f"{install_dir}/Programs_versions/Programs_versions_dictionary.txt")}
 program_dict["install_dir"] = install_dir
 
 # Default paths and arguments
@@ -85,9 +101,11 @@ fileName = [os.path.basename(x) for x in glob(f'{arguments.align_dir}/{arguments
 clusterList = '0 50 100 200 400 800 1600 3200 6400 12800 25600 51200 102400'.split(' ')
 mismatch_type = 'AC AG AT CA CG CT GA GC GT TA TC TG'.split(' ')
 
-logging.info('User arguments:\n' + '\n'.join(f'{tab*8}{k}: {v}' for k, v in vars(arguments).items())+newLine)
-logging.info('Programs versions:\n'+newLine.join([f'{tab*8}{key}: {value}' for key, value in program_dict.items()])+newLine)
-logging.info(f'{len(fileName)} files found on the directory: {arguments.align_dir}\n'+newLine.join([f'{tab*8}{file}' for file in fileName])+newLine)
+logging.info('User arguments:\n' + '\n'.join(f'{tab * 8}{k}: {v}' for k, v in vars(arguments).items()) + newLine)
+logging.info('Programs versions:\n' + newLine.join(
+    [f'{tab * 8}{key}: {value}' for key, value in program_dict.items()]) + newLine)
+logging.info(f'{len(fileName)} files found on the directory: {arguments.align_dir}\n' + newLine.join(
+    [f'{tab * 8}{file}' for file in fileName]) + newLine)
 
 
 def step_1():
@@ -128,7 +146,8 @@ def start_analyze(sample):
     #   5th field contains: 
     #      * of reads supporting the mismatch
     #      * of reads supporting the mismatch on the plus strand
-    cmd = r"""awk 'BEGIN{{FS=OFS="\t"}}{{split($4,a,";"); mms=$1 "\t" $2 "\t" $3 "\t" a[4]; seen[mms]++; if (a[2]=="F") plus[mms]++}}END{{for (i in seen) {{if (plus[i]=="") plus[i]=0; print i,seen[i]";"plus[i],"+"}}}}' {path}_byRead.bed | sort -k1,1 -k2,2n -k4,4 > {path}_all.bed""".format(path=f'{cur_ident_dir}/{sample}')
+    cmd = r"""awk 'BEGIN{{FS=OFS="\t"}}{{split($4,a,";"); mms=$1 "\t" $2 "\t" $3 "\t" a[4]; seen[mms]++; if (a[2]=="F") plus[mms]++}}END{{for (i in seen) {{if (plus[i]=="") plus[i]=0; print i,seen[i]";"plus[i],"+"}}}}' {path}_byRead.bed | sort -k1,1 -k2,2n -k4,4 > {path}_all.bed""".format(
+        path=f'{cur_ident_dir}/{sample}')
     sp.check_output(cmd, shell=True, stderr=sp.PIPE)
 
     cmd = f'bzip2 -f {cur_ident_dir}/{sample}_byRead.bed &'
@@ -147,13 +166,15 @@ def start_analyze(sample):
 
     # Intersection and strand correction with the user region file
     # Awk throws overlapping exons from '-' and '+' strand together
-    cmd = r"""{bedtools} intersect -a {cur_file_pre}.bed -b {region_file} -wa -wb | cut -f 1-5,12 | awk 'BEGIN{{FS=OFS="\t"}}{{mms=$1 "\t" $2 "\t" $3 "\t" $4 "\t" $5; strand[mms]=strand[mms] "," $6}}END{{for (i in strand){{split(substr(strand[i],2),strand_arr,","); strand_flag=1;for (j in strand_arr){{if (strand_arr[1]!=strand_arr[j]){{strand_flag=0;break}}}} if (strand_flag==1) print i,strand_arr[1]}}}}' | sort -k1,1 -k2,2n -k4,4 | awk 'BEGIN{{FS=OFS="\t"; rev["AC"]="TG"; rev["AG"]="TC";rev["AT"]="TA";rev["CA"]="GT";rev["CG"]="GC";rev["CT"]="GA";rev["GA"]="CT";rev["GC"]="CG";rev["GT"]="CA";rev["TA"]="AT";rev["TC"]="AG";rev["TG"]="AC"}}{{if ($6=="-") $4=rev[$4]; print $1,$2,$3,$4,$5,$6}}' >  {cur_file_pre}_strandByCDS.bed""".format(bedtools=f'{program_dict["bedtools"]}', cur_file_pre=f'{cur_file_pre}', region_file=f'{arguments.region_file}')
+    cmd = r"""{bedtools} intersect -a {cur_file_pre}.bed -b {region_file} -wa -wb | cut -f 1-5,12 | awk 'BEGIN{{FS=OFS="\t"}}{{mms=$1 "\t" $2 "\t" $3 "\t" $4 "\t" $5; strand[mms]=strand[mms] "," $6}}END{{for (i in strand){{split(substr(strand[i],2),strand_arr,","); strand_flag=1;for (j in strand_arr){{if (strand_arr[1]!=strand_arr[j]){{strand_flag=0;break}}}} if (strand_flag==1) print i,strand_arr[1]}}}}' | sort -k1,1 -k2,2n -k4,4 | awk 'BEGIN{{FS=OFS="\t"; rev["AC"]="TG"; rev["AG"]="TC";rev["AT"]="TA";rev["CA"]="GT";rev["CG"]="GC";rev["CT"]="GA";rev["GA"]="CT";rev["GC"]="CG";rev["GT"]="CA";rev["TA"]="AT";rev["TC"]="AG";rev["TG"]="AC"}}{{if ($6=="-") $4=rev[$4]; print $1,$2,$3,$4,$5,$6}}' >  {cur_file_pre}_strandByCDS.bed""".format(
+        bedtools=f'{program_dict["bedtools"]}', cur_file_pre=f'{cur_file_pre}', region_file=f'{arguments.region_file}')
     sp.check_output(cmd, shell=True, stderr=sp.PIPE)
 
     # Calculating depth
-    cmd = r"""{samtools} mpileup -x -l {cur_file_pre}_strandByCDS.bed -BQ0 -d10000000 --ff SECONDARY,UNMAP,DUP {path}_Aligned.sortedByCoord.out.mdup.clipOverCigar.filtered.sam > {cur_file_pre}_strandByCDS.pu""".format(samtools=f'{program_dict["samtools"]}', path=f'{cur_ident_dir}/{sample}', cur_file_pre=f'{cur_file_pre}')
+    cmd = r"""{samtools} mpileup -x -l {cur_file_pre}_strandByCDS.bed -BQ0 -d10000000 --ff SECONDARY,UNMAP,DUP {path}_Aligned.sortedByCoord.out.mdup.clipOverCigar.filtered.sam > {cur_file_pre}_strandByCDS.pu""".format(
+        samtools=f'{program_dict["samtools"]}', path=f'{cur_ident_dir}/{sample}', cur_file_pre=f'{cur_file_pre}')
     sp.check_output(cmd, shell=True, stderr=sp.PIPE)
-    
+
     # mpileup_analyser.pl:
     #   this script gets mpileup output file and returns a bed-like file with counting of reads with each nucleotide / with indels =
     cmd = r"""{perl} {install_dir}/Scripts/Step_1/mpileup_analyser.pl {cur_file_pre}_strandByCDS.pu /dev/stdout 30 33 | {bedtools} intersect -a {cur_file_pre}_strandByCDS.bed -b stdin -wa -wb | awk 'BEGIN{{FS=OFS="\t"}}{{print $1,$2,$3,$4,$5";"$29";"$17,$6}}' > {cur_file_pre}_sByCDS_wDPStrand.bed""".format(
@@ -165,7 +186,7 @@ def start_analyze(sample):
     os.remove(f"{cur_ident_dir}/{sample}_Aligned.sortedByCoord.out.mdup.clipOverCigar.filtered.sam")
     os.remove(f"{cur_file_pre}_strandByCDS.bed")
     os.remove(f"{cur_file_pre}_strandByCDS.pu")
-    
+
     logging.info(f'{tab}Sample {sample} finished step 1 successfully!')
 
 
@@ -174,32 +195,43 @@ def step_2():
     if not os.path.isfile(f'{analysis_all_samples}/allSamples_withDepthPerStrand.bed.gz'):
         # Merging sites from all samples
         cmd = r"""{GAWK} 'BEGIN{{FS=OFS="\t";SUBSEP="\t"}}{{sites[$1,$2,$3,$4][ARGIND]=$5}}END{{for (i in sites) {{printf("%s",i); for (j=1; j<ARGC;j++) {{string="NA"; if (sites[i][j]!="") string=sites[i][j]; printf("\t%s",string)}} printf("\n");delete sites[i]}}}}' {analysis_dir}/{pre}*/*_all_*Strand.bed > {all_samples}/allSamples_withDepthPerStrand.bed""".format(
-            GAWK=f'{program_dict["GAWK"]}', all_samples=f'{analysis_all_samples}', pre=f'{arguments.pre}', analysis_dir=f'{analysis_dir}')
+            GAWK=f'{program_dict["GAWK"]}', all_samples=f'{analysis_all_samples}', pre=f'{arguments.pre}',
+            analysis_dir=f'{analysis_dir}')
     else:
-        cmd = r"""gunzip {all_samples}/allSamples_withDepthPerStrand.bed.gz""".format(all_samples=f'{analysis_all_samples}')
+        cmd = r"""gunzip {all_samples}/allSamples_withDepthPerStrand.bed.gz""".format(
+            all_samples=f'{analysis_all_samples}')
     sp.check_output(cmd, shell=True, stderr=sp.PIPE)
-
+    
+    logging.info('Started statistical analysis and scoring')
+   
     # Statistical analysis and scoring
     cmd = r"""{perl} {install_dir}/Scripts/Step_2/binom9.pl {all_samples}/allSamples_withDepthPerStrand.bed $(ls -1 {analysis_dir}/{pre}*/*_all*Strand.bed | wc -l) | sort -k5gr > {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals.txt""".format(
-        install_dir=program_dict["install_dir"], perl=f'{program_dict["perl"]}', all_samples=f'{analysis_all_samples}', pre=f'{arguments.pre}', analysis_dir=f'{analysis_dir}')
+        install_dir=program_dict["install_dir"], perl=f'{program_dict["perl"]}', all_samples=f'{analysis_all_samples}',
+        pre=f'{arguments.pre}', analysis_dir=f'{analysis_dir}')
     sp.check_output(cmd, shell=True, stderr=sp.PIPE)
 
     cmd = r"""gzip -f {all_samples}/allSamples_withDepthPerStrand.bed &""".format(all_samples=f'{analysis_all_samples}')
     sp.check_output(cmd, shell=True, stderr=sp.PIPE)
 
     # Filtering by scores
+    logging.info('Filtering by score')
+
     cmd = r"""awk -F'\t' '$17 >= 0.25 && $5 >= 1' {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals.txt > {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered.txt""".format(
         all_samples=f'{analysis_all_samples}')
     sp.check_output(cmd, shell=True, stderr=sp.PIPE)
 
     # Printing pre-clustering summary
     cmd = r"""cat {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered.txt | {bedtools} intersect -a stdin -b {region_file} -wa -wb | awk 'BEGIN{{FS=OFS=SUBSEP="\t"}}{{strand[$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17]=strand[$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17] "," $23}}END{{for (i in strand){{split(substr(strand[i],2),strand_arr,","); strand_flag=1;for (j in strand_arr){{if (strand_arr[1]!=strand_arr[j]){{strand_flag=0;break}}}} if (strand_flag==1) print i,strand_arr[1]}}}}' | sort -k1,1 -k2,2n -k4,4 > {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand.txt""".format(
-        all_samples=f'{analysis_all_samples}', bedtools=f'{program_dict["bedtools"]}', region_file=f'{arguments.region_file}')
+        all_samples=f'{analysis_all_samples}', bedtools=f'{program_dict["bedtools"]}',
+        region_file=f'{arguments.region_file}')
     sp.check_output(cmd, shell=True, stderr=sp.PIPE)
 
-     # Filtering all the unknown chromosome from the list
-    clean_mess_chr = pd.read_csv(f'{analysis_all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand.txt',
-                                 header=None, sep='\t', dtype=str)
+    # Filtering all the unknown chromosome from the list
+    logging.info('Clear unknown chromosomes')
+
+    clean_mess_chr = pd.read_csv(
+        f'{analysis_all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand.txt',
+        header=None, sep='\t', dtype=str)
     clean_mess_chr = clean_mess_chr[~clean_mess_chr[0].str.contains(r'_(?!$)')]
     clean_mess_chr.to_csv(
         f'{analysis_all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.txt',
@@ -216,30 +248,34 @@ def step_2():
     sp.check_output(cmd, shell=True, stderr=sp.PIPE)
 
     # use annovar to get mRNA positions
-    cmd = r"""awk 'BEGIN{{FS="\t";OFS=" "}}{{print $1,$3,$3,substr($4,1,1),substr($4,2,2)" "}}' {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.NoBLAT.txt >{all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.forAnnovar.txt""".format(
+    cmd = r"""awk 'BEGIN{{FS="\t";OFS=" "}}{{print $1,$3,$3,substr($4,1,1),substr($4,2,2),$1"_"$3"_"substr($4,1,1)substr($4,2,2)}}' {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.NoBLAT.txt >{all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.forAnnovar.txt""".format(
         all_samples=f'{analysis_all_samples}')
     sp.check_output(cmd, shell=True, stderr=sp.PIPE)
 
-    cmd = r"""{perl} {annovar}/table_annovar.pl  -buildver hg38 {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.forAnnovar.txt -protocol refGene {annovarDB} -operation gx -nastring . -csvout -polish""".format(
+    cmd = r"""{perl} {annovar}/table_annovar.pl  -buildver hg38 {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.forAnnovar.txt -protocol ncbiRefSeq {annovarDB} -operation gx -nastring . -csvout -polish  --otherinfo""".format(
         perl=f'{program_dict["perl"]}',
         annovar=f'{program_dict["annovar"]}',
         annovarDB=f'{program_dict["annovarDB"]}',
         all_samples=f'{analysis_all_samples}')
     sp.check_output(cmd, shell=True, stderr=sp.PIPE)
 
-    annotated_coords = f"{analysis_all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.forAnnovar.txt.refGene.exonic_variant_function"
+    annotated_coords = f"{analysis_all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.forAnnovar.txt.hg38_multianno.csv"
     refseq_recs = []
     with open(annotated_coords) as annovar_res:
-        reader = csv.DictReader(annovar_res, delimiter="\t", lineterminator="\n",
-                                fieldnames=("line", "exonicFunc", "RefSeqPos", "OrigCoord"))
+        reader = csv.DictReader(annovar_res, delimiter=",", lineterminator="\n")
         for coord in reader:
-            refseqs = coord["RefSeqPos"].strip(",").split(",")
+            refseqs = coord["AAChange.ncbiRefSeq"]
+            if refseqs == ".":
+                orig_pos = coord["Otherinfo1"]
+                ref_id = coord["Gene.ncbiRefSeq"]
+                refseq_recs.append("\t".join([ref_id, coord["Start"], coord["End"], orig_pos, "0", "+"]))
+                continue
+            refseqs = refseqs.strip(",").split(",")
             for refseq in refseqs:
                 try:
                     _, ref_id, _, pos, _ = refseq.split(":")
                     pos = pos[3:-1]
-                    orig_pos = "_".join(coord["OrigCoord"].split(" ")[:2]) + "_" + coord["OrigCoord"][-4:].replace(" ",
-                                                                                                                   "")
+                    orig_pos = coord["Otherinfo1"]
                     refseq_recs.append("\t".join([ref_id, str(int(pos) - 1), pos, orig_pos, "0", "+"]))
                 except ValueError:
                     pass
@@ -265,7 +301,8 @@ def step_2():
         os.remove(temp_file)
 
     clustering_table.to_csv(
-        f'{outputStatsDir}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_PairsClustStats.txt', index=False, sep='\t')
+        f'{outputStatsDir}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_PairsClustStats.txt', index=False,
+        sep='\t')
 
     # Create a logo graph for each miss and cluster size
     logging.info(f'{tab}Starting create Logo graphs')
@@ -320,19 +357,21 @@ def cluster_filter(cluster_size):
     any_refseq = any_refseq.rename(columns={"marked_for_deletion": "to_delete"})
     result_df = result_df.merge(any_refseq, left_on=["chr", "pos"], right_index=True).drop("marked_for_deletion",
                                                                                            1).drop_duplicates()
-    all_sites = pd.read_csv(f'{analysis_all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.NoBLAT.txt',
-                     sep='\t', header=None,
-                    names=["chr", "pre_pos", "pos", "mutation_type", "info_1", "info_2", "info_3", "info_4", "info_5",
-                            "info_6", "info_7", "info_8", "info_9", "info_10", "info_11", "info_12", "info_13", "strand"])
+    all_sites = pd.read_csv(
+        f'{analysis_all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.NoBLAT.txt',
+        sep='\t', header=None,
+        names=["chr", "pre_pos", "pos", "mutation_type", "info_1", "info_2", "info_3", "info_4", "info_5",
+               "info_6", "info_7", "info_8", "info_9", "info_10", "info_11", "info_12", "info_13", "strand"])
     result_df = result_df.merge(all_sites, on=["chr", "pos", "mutation_type"], sort=True)
     result_df = result_df[~result_df["to_delete"]]
     result_df.drop(['to_delete'], axis=1, inplace=True)
     result_df = result_df[["chr", "pre_pos", "pos", "mutation_type", "info_1", "info_2", "info_3", "info_4", "info_5",
                            "info_6", "info_7", "info_8", "info_9", "info_10", "info_11", "info_12", "info_13",
                            "strand"]]
-    result_df.to_csv(f'{outputDataDir}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_clust_{cluster_size}.txt', header=None, index=False, sep='\t')
+    result_df.to_csv(f'{outputDataDir}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_clust_{cluster_size}.txt',
+                     header=None, index=False, sep='\t')
 
-    logging.info(f'{tab*2}Cluster size {cluster_size} finished successfully!')
+    logging.info(f'{tab * 2}Cluster size {cluster_size} finished successfully!')
 
 
 def create_logo_by_cluster_size(cluster_size):
@@ -379,7 +418,8 @@ def create_logo_by_cluster_size(cluster_size):
             crp_logo.style_xticks(rotation=90, fmt='%d', anchor=0)
 
             plt.savefig(f'{logo_dir}/{cluster_size}/clust_{cluster_size}_miss_{miss}.pdf', dpi=600)
-            logging.info(f'{tab*2}Logo graphs of mismatch: {miss} for cluster size :{cluster_size} created successfully!')
+            logging.info(
+                f'{tab * 2}Logo graphs of mismatch: {miss} for cluster size :{cluster_size} created successfully!')
 
         # Remove temp files folder
         shutil.rmtree(f'{temp_file_dir}/')
@@ -409,7 +449,8 @@ def step_3():
 
     # Summarize to a final sites list
     cmd_w_sums_summary = r'''{GAWK} 'BEGIN{{FS=OFS="\t";SUBSEP="\t"}}{{sites[$1,$2,$3,$4,"0",$6][ARGIND]=$5}}END{{for (i in sites) {{printf("%s",i); for (j=1; j<ARGC;j++) {{string="NaN"; if (sites[i][j]!="") string=sites[i][j]; printf("\t%s",string)}} printf("\n");delete sites[i]}}}}' {known_all_samples}/all_samples_wSums.txt > {final_original_dir}/allTissues_wSums_summary_clust_0.txt'''.format(
-        GAWK=f'{program_dict["GAWK"]}', known_all_samples=f'{known_all_samples}', final_original_dir=f'{final_original_dir}')
+        GAWK=f'{program_dict["GAWK"]}', known_all_samples=f'{known_all_samples}',
+        final_original_dir=f'{final_original_dir}')
     sp.check_output(cmd_w_sums_summary, shell=True, stderr=sp.PIPE)
 
     columns = ['chr', 'start', 'end', 'mismatch', '0', 'strand', 'coverage', 'total coverage', 'edited coverage']
@@ -440,28 +481,39 @@ def mpileup_known(bam_file_path):
     known_pre = bam_file_path.split('/')[-2]
     sample_dir = f'{known_files_dir}/{known_pre}'
     os.makedirs(f'{sample_dir}', exist_ok=True)
-    cmd_known = r'''{samtools} mpileup -l {sites_for_known} -BQ0 -d10000000 --ff SECONDARY,UNMAP,DUP {bam_file} | {perl} {install_dir}/Scripts/Step_3/mpileup_analyser.pl /dev/stdin {sample_dir}/{known_pre}_wDepth.txt 30 33'''.format(samtools=f'{program_dict["samtools"]}', sites_for_known=f'{sites_list_dir}/sites_for_known_clust_0.bed', bam_file=f'{bam_file_path}', perl=f'{program_dict["perl"]}', known_pre=f'{known_pre}', sample_dir=f'{sample_dir}', install_dir=program_dict["install_dir"])
+    cmd_known = r'''{samtools} mpileup -l {sites_for_known} -BQ0 -d10000000 --ff SECONDARY,UNMAP,DUP {bam_file} | {perl} {install_dir}/Scripts/Step_3/mpileup_analyser.pl /dev/stdin {sample_dir}/{known_pre}_wDepth.txt 30 33'''.format(
+        samtools=f'{program_dict["samtools"]}', sites_for_known=f'{sites_list_dir}/sites_for_known_clust_0.bed',
+        bam_file=f'{bam_file_path}', perl=f'{program_dict["perl"]}', known_pre=f'{known_pre}',
+        sample_dir=f'{sample_dir}', install_dir=program_dict["install_dir"])
     sp.check_output(cmd_known, shell=True, stderr=sp.PIPE)
 
-    cmd_known = r'''{bedtools} intersect -a {sites_for_known} -b {sample_dir}/{known_pre}_wDepth.txt -wa -wb -nonamecheck | awk 'BEGIN{{FS=OFS="\t"; nuc_plus["A"]=0;nuc_plus["C"]=1;nuc_plus["G"]=2;nuc_plus["T"]=3; nuc_minus["A"]=3; nuc_minus["C"]=2; nuc_minus["G"]=1;nuc_minus["T"]=0}}{{mut=substr($4,2,1);offset=24; if ($6=="+") offset+=nuc_plus[mut]; else offset+=nuc_minus[mut];print $1,$2,$3,$4, $29 ";" $offset ,$6}}' > {sample_dir}/{known_pre}_covered_wDepth.bed'''.format(bedtools=f'{program_dict["bedtools"]}', sites_for_known=f'{sites_list_dir}/sites_for_known_clust_0.bed', known_pre=f'{known_pre}', sample_dir=f'{sample_dir}')
+    cmd_known = r'''{bedtools} intersect -a {sites_for_known} -b {sample_dir}/{known_pre}_wDepth.txt -wa -wb -nonamecheck | awk 'BEGIN{{FS=OFS="\t"; nuc_plus["A"]=0;nuc_plus["C"]=1;nuc_plus["G"]=2;nuc_plus["T"]=3; nuc_minus["A"]=3; nuc_minus["C"]=2; nuc_minus["G"]=1;nuc_minus["T"]=0}}{{mut=substr($4,2,1);offset=24; if ($6=="+") offset+=nuc_plus[mut]; else offset+=nuc_minus[mut];print $1,$2,$3,$4, $29 ";" $offset ,$6}}' > {sample_dir}/{known_pre}_covered_wDepth.bed'''.format(
+        bedtools=f'{program_dict["bedtools"]}', sites_for_known=f'{sites_list_dir}/sites_for_known_clust_0.bed',
+        known_pre=f'{known_pre}', sample_dir=f'{sample_dir}')
     sp.check_output(cmd_known, shell=True, stderr=sp.PIPE)
 
-    cmd_known = r'''{bedtools} intersect -a {sites_for_known} -b {sample_dir}/{known_pre}_covered_wDepth.bed -v -nonamecheck | awk 'BEGIN{{FS=OFS="\t"}}{{print $1,$2,$3,$4, "0;0", $6}}' > {sample_dir}/{known_pre}_notCovered_wDepth.bed'''.format(bedtools=f'{program_dict["bedtools"]}', sites_for_known=f'{sites_list_dir}/sites_for_known_clust_0.bed', known_pre=f'{known_pre}', sample_dir=f'{sample_dir}')
+    cmd_known = r'''{bedtools} intersect -a {sites_for_known} -b {sample_dir}/{known_pre}_covered_wDepth.bed -v -nonamecheck | awk 'BEGIN{{FS=OFS="\t"}}{{print $1,$2,$3,$4, "0;0", $6}}' > {sample_dir}/{known_pre}_notCovered_wDepth.bed'''.format(
+        bedtools=f'{program_dict["bedtools"]}', sites_for_known=f'{sites_list_dir}/sites_for_known_clust_0.bed',
+        known_pre=f'{known_pre}', sample_dir=f'{sample_dir}')
     sp.check_output(cmd_known, shell=True, stderr=sp.PIPE)
 
-    cmd_known = r'''cat {sample_dir}/{known_pre}_covered_wDepth.bed {sample_dir}/{known_pre}_notCovered_wDepth.bed | sort -k1,1 -k2,2n -k4 > {sample_dir}/{known_pre}_all_wDepth.bed'''.format(known_pre=f'{known_pre}', sample_dir=f'{sample_dir}')
+    cmd_known = r'''cat {sample_dir}/{known_pre}_covered_wDepth.bed {sample_dir}/{known_pre}_notCovered_wDepth.bed | sort -k1,1 -k2,2n -k4 > {sample_dir}/{known_pre}_all_wDepth.bed'''.format(
+        known_pre=f'{known_pre}', sample_dir=f'{sample_dir}')
     sp.check_output(cmd_known, shell=True, stderr=sp.PIPE)
 
-    logging.info(f'{tab*2}Sample {bam_file_path.split("/")[-1].split("_")[0]} Finished known successfully!')
+    logging.info(f'{tab * 2}Sample {bam_file_path.split("/")[-1].split("_")[0]} Finished known successfully!')
 
 
-# Step 1
-step_1()
+if arguments.start_from == 1 and arguments.end_at >= 1:
+    # Step 1
+    step_1()
 
-# Step 2
-step_2()
+if arguments.start_from <= 2 and arguments.end_at >= 2:
+    # Step 2
+    step_2()
 
 # Step 3
-step_3()
+if and arguments.end_at >= 3:
+    step_3()
 
 logging.info('''Finished Or-shay's Pipeline successfully!''')
