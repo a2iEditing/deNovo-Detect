@@ -43,6 +43,8 @@ parser.add_argument('--start_from', dest='start_from', action='store', type=int,
                     help='Step to start with(to skip steps, steps 1-3)')
 parser.add_argument('--end_at', dest='end_at', action='store', type=int, default=3,
                     help='Step to end with(to stop at a step, steps 1-3)')
+parser.add_argument('--strand_insensitive_blat', dest='strand_insensitive_blat', action='store_true',
+                    help='If set, will use use strand-insensitive BLAT based filtering')
 
 arguments = parser.parse_args()
 
@@ -192,7 +194,7 @@ def start_analyze(sample):
 
 def step_2():
     logging.info('Starting step 2')
-    if not os.path.isfile(f'{analysis_all_samples}/allSamples_withDepthPerStrand.bed.gz'):
+    if not (os.path.isfile(f'{analysis_all_samples}/allSamples_withDepthPerStrand.bed.gz') or os.path.isfile(f'{analysis_all_samples}/allSamples_withDepthPerStrand.bed')):
         # Merging sites from all samples
         cmd = r"""{GAWK} 'BEGIN{{FS=OFS="\t";SUBSEP="\t"}}{{sites[$1,$2,$3,$4][ARGIND]=$5}}END{{for (i in sites) {{printf("%s",i); for (j=1; j<ARGC;j++) {{string="NA"; if (sites[i][j]!="") string=sites[i][j]; printf("\t%s",string)}} printf("\n");delete sites[i]}}}}' {analysis_dir}/{pre}*/*_all_*Strand.bed > {all_samples}/allSamples_withDepthPerStrand.bed""".format(
             GAWK=f'{program_dict["GAWK"]}', all_samples=f'{analysis_all_samples}', pre=f'{arguments.pre}',
@@ -200,12 +202,14 @@ def step_2():
     else:
         cmd = r"""gunzip {all_samples}/allSamples_withDepthPerStrand.bed.gz""".format(
             all_samples=f'{analysis_all_samples}')
-    sp.check_output(cmd, shell=True, stderr=sp.PIPE)
+    
+    if not os.path.isfile(f'{analysis_all_samples}/allSamples_withDepthPerStrand.bed'):
+        sp.check_output(cmd, shell=True, stderr=sp.PIPE)
     
     logging.info('Started statistical analysis and scoring')
    
     # Statistical analysis and scoring
-    cmd = r"""{perl} {install_dir}/Scripts/Step_2/binom9.pl {all_samples}/allSamples_withDepthPerStrand.bed $(ls -1 {analysis_dir}/{pre}*/*_all*Strand.bed | wc -l) | sort -k5gr > {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals.txt""".format(
+    cmd = r"""{perl} {install_dir}/Scripts/Step_2/binom9.pl {all_samples}/allSamples_withDepthPerStrand.bed $(ls -1 {analysis_dir}/{pre}*/*_all*Strand.bed* | wc -l) | sort -k5gr > {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals.txt""".format(
         install_dir=program_dict["install_dir"], perl=f'{program_dict["perl"]}', all_samples=f'{analysis_all_samples}',
         pre=f'{arguments.pre}', analysis_dir=f'{analysis_dir}')
     sp.check_output(cmd, shell=True, stderr=sp.PIPE)
@@ -238,14 +242,26 @@ def step_2():
         index=False, header=None, sep='\t')
 
     # Filtering BLAT mismtaches
-    cmd = r"""awk '{{OFS="\t";print $1"#"$4,$2,$3,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18}}' {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.txt > {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.MMCoord.bed""".format(
-        all_samples=f'{analysis_all_samples}')
-    sp.check_output(cmd, shell=True, stderr=sp.PIPE)
+    if arguments.strand_insensitive_blat:
+        logging.info("Filter BLAT mismatches - strand insensitive")
+        cmd = r"""awk 'BEGIN{{arr["AC"]="AC";arr["AG"]="AG";arr["AT"]="AT";arr["CA"]="CA";arr["CG"]="CG";arr["CT"]="CT";arr["GA"]="CT";arr["GC"]="CG";arr["GT"]="CA";arr["TA"]="AT";arr["TC"]="AG";arr["TG"]="AC";}}{{OFS="\t";print $1"#"arr[$4],$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18}}' {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.txt > {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.MMCoord.bed""".format(
+            all_samples=f'{analysis_all_samples}')
+        sp.check_output(cmd, shell=True, stderr=sp.PIPE)
 
-    cmd = r"""awk '{{OFS="\t"; print $1"#"$4,$2,$3,$6}}' {blat_file}|{bedtools} intersect -a {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.MMCoord.bed -b stdin -v -wa|awk -F "[\t|#]" '{{OFS="\t"; print $1,$3,$4,$2,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18}}' > {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.NoBLAT.txt""".format(
-        all_samples=f'{analysis_all_samples}', bedtools=f'{program_dict["bedtools"]}',
-        blat_file=f'{arguments.blat_file}')
-    sp.check_output(cmd, shell=True, stderr=sp.PIPE)
+        cmd = r"""awk 'BEGIN{{arr["AC"]="AC";arr["AG"]="AG";arr["AT"]="AT";arr["CA"]="CA";arr["CG"]="CG";arr["CT"]="CT";arr["GA"]="CT";arr["GC"]="CG";arr["GT"]="CA";arr["TA"]="AT";arr["TC"]="AG";arr["TG"]="AC"}}{{OFS="\t"; print $1"#"arr[$4],$2,$3,$6}}' {blat_file}|{bedtools} intersect -a {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.MMCoord.bed -b stdin -v -wa|awk -F "[\t|#]" '{{OFS="\t"; print $1,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19}}' > {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.NoBLAT.txt""".format(
+            all_samples=f'{analysis_all_samples}', bedtools=f'{program_dict["bedtools"]}',
+            blat_file=f'{arguments.blat_file}')
+        sp.check_output(cmd, shell=True, stderr=sp.PIPE)
+    else:
+        logging.info("Filter BLAT mismatches - strand sensitive")
+        cmd = r"""awk '{{OFS="\t";print $1"#"$4,$2,$3,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18}}' {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.txt > {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.MMCoord.bed""".format(
+            all_samples=f'{analysis_all_samples}')
+        sp.check_output(cmd, shell=True, stderr=sp.PIPE)
+
+        cmd = r"""awk '{{OFS="\t"; print $1"#"$4,$2,$3,$6}}' {blat_file}|{bedtools} intersect -a {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.MMCoord.bed -b stdin -v -wa|awk -F "[\t|#]" '{{OFS="\t"; print $1,$3,$4,$2,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18}}' > {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.NoBLAT.txt""".format(
+            all_samples=f'{analysis_all_samples}', bedtools=f'{program_dict["bedtools"]}',
+            blat_file=f'{arguments.blat_file}')
+        sp.check_output(cmd, shell=True, stderr=sp.PIPE)
 
     # use annovar to get mRNA positions
     cmd = r"""awk 'BEGIN{{FS="\t";OFS=" "}}{{print $1,$3,$3,substr($4,1,1),substr($4,2,2),$1"_"$3"_"substr($4,1,1)substr($4,2,2)}}' {all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.NoBLAT.txt >{all_samples}/allSamples_withDepthPerStrand_scoreAndPvals_filtered_withStrand_withoutUnknownChromosome.forAnnovar.txt""".format(
